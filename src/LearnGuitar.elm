@@ -5,6 +5,7 @@ import Html.Events exposing (onInput)
 import Svg exposing (circle, svg, line)
 import Svg.Attributes exposing (..)
 import Select
+import List.Extra as LE
 
 
 --import MusicTheory.MusicTypes exposing (..)
@@ -161,25 +162,66 @@ dropDownMaker labelText stuff msg =
         ]
 
 
-noteMaker : Note -> Html Msg
-noteMaker note =
-    option
-        []
-        [ text <| toString note ]
-
-
-scaleOptionMaker : Scale -> Html Msg
-scaleOptionMaker scale =
-    option
-        []
-        [ text <| toString scale ]
-
-
 displayScale : Model -> Html Msg
 displayScale model =
     div
         []
-        [ text <| toString chromaticScale ]
+        [ text <| toString <| makeScale model ]
+
+
+makeScale : Model -> List Note
+makeScale model =
+    model
+        |> getRootAndScale
+        |> reindexChromaticScale
+        |> getScaleIndexes
+        |> constructScale
+
+
+getRootAndScale : Model -> ( Note, Scale )
+getRootAndScale model =
+    ( model.currentRoot, model.currentScale )
+
+
+reindexChromaticScale : ( Note, Scale ) -> ( List Note, Scale )
+reindexChromaticScale ( root, scale ) =
+    let
+        redenominatedScale =
+            chromaticScale
+                |> List.repeat 2
+                |> List.concat
+                |> LE.dropWhile ((/=) root)
+                |> List.take 13
+                |> Debug.log "This is the reindex"
+    in
+        ( redenominatedScale, scale )
+
+
+getScaleIndexes : ( List Note, Scale ) -> ( List Note, List Int )
+getScaleIndexes ( notes, scale ) =
+    ( notes, getScaleIndexes_ scale )
+
+
+constructScale : ( List Note, List Int ) -> List Note
+constructScale ( notes, indexes ) =
+    indexes
+        |> List.filterMap (flip LE.getAt notes)
+
+
+getScaleIndexes_ : Scale -> List Int
+getScaleIndexes_ scale =
+    case scale of
+        Major ->
+            --[ W  W  H  W  W  W    H]
+            [ 0, 2, 4, 5, 7, 9, 11, 12 ]
+
+        MelodicMinor ->
+            --[ W  H  W  W  W  W    H]
+            [ 0, 2, 3, 5, 7, 9, 11, 12 ]
+
+        HarmonicMinor ->
+            --[ W  H  W  W  H  WH   H]
+            [ 0, 2, 3, 5, 7, 8, 11, 12 ]
 
 
 svgThingy : Model -> Html Msg
