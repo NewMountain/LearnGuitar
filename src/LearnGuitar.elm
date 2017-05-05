@@ -192,7 +192,6 @@ reindexChromaticScale ( root, scale ) =
                 |> List.concat
                 |> LE.dropWhile ((/=) root)
                 |> List.take 13
-                |> Debug.log "This is the reindex"
     in
         ( redenominatedScale, scale )
 
