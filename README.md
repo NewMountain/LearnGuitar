@@ -19,4 +19,5 @@ To enable this, the application will allow a user to enter in a chord (short ter
 This project is a creative outlet and is purpose built for me. I would love to hear from you if you are interested in contributing or how you use this. If there is a feature you would like to see, I would invite the feedback, but make no promises on if and when I may implement such functionality. The goal of this, after all, is to enable me to practice guitar more.
 
 Rock on.
+
 -Chris
