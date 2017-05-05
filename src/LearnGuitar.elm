@@ -1,8 +1,10 @@
 module LearnGuitar exposing (..)
 
 import Html exposing (..)
+import Html.Events exposing (onInput)
 import Svg exposing (circle, svg, line)
 import Svg.Attributes exposing (..)
+import Select
 
 
 --import MusicTheory.MusicTypes exposing (..)
@@ -30,6 +32,10 @@ type Pitch
     | E
     | F
     | G
+
+
+type alias Fret =
+    Int
 
 
 type Note
@@ -73,7 +79,8 @@ listOfScales =
 
 
 type alias Model =
-    { currentScale : Note
+    { currentRoot : Note
+    , currentScale : Scale
     }
 
 
@@ -84,7 +91,9 @@ init =
 
 initModel : Model
 initModel =
-    { currentScale = Note C }
+    { currentRoot = Note C
+    , currentScale = Major
+    }
 
 
 
@@ -92,14 +101,18 @@ initModel =
 
 
 type Msg
-    = NoOp
+    = UpdateRoot Note
+    | UpdateScale Scale
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        NoOp ->
-            ( model, Cmd.none )
+        UpdateRoot note ->
+            ( { model | currentRoot = note }, Cmd.none )
+
+        UpdateScale scale_ ->
+            ( { model | currentScale = scale_ }, Cmd.none )
 
 
 
@@ -129,24 +142,22 @@ view model =
 
 rootNoteDropdown : Model -> Html Msg
 rootNoteDropdown model =
-    dropDownMaker "Please select a root note" chromaticScale noteMaker
+    dropDownMaker "Please select a root note" chromaticScale UpdateRoot
 
 
 scaleDropdown : Model -> Html Msg
 scaleDropdown model =
-    dropDownMaker "Please select a root scale type" listOfScales scaleOptionMaker
+    dropDownMaker "Please select a root scale type" listOfScales UpdateScale
 
 
-dropDownMaker : String -> List a -> (a -> Html Msg) -> Html Msg
-dropDownMaker labelText stuff stuffMaker =
+dropDownMaker : String -> List a -> (a -> msg) -> Html msg
+dropDownMaker labelText stuff msg =
     div
         []
         [ label
             []
             [ text labelText ]
-        , select
-            []
-            (List.map stuffMaker stuff)
+        , Select.from stuff msg
         ]
 
 
