@@ -1,7 +1,7 @@
 {
     "version": "1.0.0",
     "summary": "A project to improve that state of guitar improvization tools",
-    "repository": "https://github.com/NewMountain/LearnGuitar.elm",
+    "repository": "https://github.com/NewMountain/learnguitar.git",
     "license": "MIT",
     "source-directories": [
         "."
