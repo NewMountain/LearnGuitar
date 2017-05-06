@@ -50,6 +50,12 @@ type Scale
     | HarmonicMinor
 
 
+type AccidentalClass
+    = Sharp_
+    | Flat_
+    | Natural_
+
+
 chromaticScale : List Note
 chromaticScale =
     [ Note A
@@ -75,13 +81,140 @@ listOfScales =
     ]
 
 
+type UserNote
+    = ANatural
+    | ASharp
+    | BFlat
+    | CNatural
+    | CSharp
+    | DFlat
+    | DNatural
+    | DSharp
+    | EFlat
+    | ENatural
+    | FNatural
+    | FSharp
+    | GFlat
+    | GNatural
+    | GSharp
+    | AFlat
+
+
+listOfUserNotes : List UserNote
+listOfUserNotes =
+    [ ANatural
+    , BFlat
+    , CNatural
+    , CSharp
+    , DFlat
+    , DNatural
+    , EFlat
+    , ENatural
+    , FNatural
+    , FSharp
+    , GFlat
+    , GNatural
+    , AFlat
+    ]
+
+
+listOfFlatAccidentals : List UserNote
+listOfFlatAccidentals =
+    [ BFlat
+    , DFlat
+    , EFlat
+    , FNatural
+    , GFlat
+    , AFlat
+    ]
+
+
+listOfSharpAccidentals : List UserNote
+listOfSharpAccidentals =
+    [ ANatural
+    , CSharp
+    , DNatural
+    , ENatural
+    , FSharp
+    , GNatural
+    , AFlat
+    ]
+
+
+accidentalFromUserNote : UserNote -> AccidentalClass
+accidentalFromUserNote userNote =
+    case ( List.member userNote listOfSharpAccidentals, List.member userNote listOfSharpAccidentals ) of
+        ( True, _ ) ->
+            Sharp_
+
+        ( _, True ) ->
+            Flat_
+
+        ( False, False ) ->
+            Natural_
+
+
+userNoteToComputerNote : UserNote -> Note
+userNoteToComputerNote userNote =
+    case userNote of
+        ANatural ->
+            Note A
+
+        ASharp ->
+            Accidental A B
+
+        BFlat ->
+            Accidental A B
+
+        CNatural ->
+            Note C
+
+        CSharp ->
+            Accidental C D
+
+        DFlat ->
+            Accidental C D
+
+        DNatural ->
+            Note D
+
+        DSharp ->
+            Accidental D E
+
+        EFlat ->
+            Accidental D E
+
+        ENatural ->
+            Note E
+
+        FNatural ->
+            Note F
+
+        FSharp ->
+            Accidental F G
+
+        GFlat ->
+            Accidental F G
+
+        GNatural ->
+            Note G
+
+        GSharp ->
+            Accidental G A
+
+        AFlat ->
+            Accidental G A
+
+
 
 -- MODEL
 
 
 type alias Model =
-    { currentRoot : Note
+    { currentRoot : UserNote
+    , computerNote : Note
     , currentScale : Scale
+    , accidentalBehavior : AccidentalClass
     }
 
 
@@ -92,8 +225,10 @@ init =
 
 initModel : Model
 initModel =
-    { currentRoot = Note C
+    { currentRoot = CNatural
+    , computerNote = Note C
     , currentScale = Major
+    , accidentalBehavior = Natural_
     }
 
 
@@ -102,7 +237,7 @@ initModel =
 
 
 type Msg
-    = UpdateRoot Note
+    = UpdateRoot UserNote
     | UpdateScale Scale
 
 
@@ -110,10 +245,43 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         UpdateRoot note ->
-            ( { model | currentRoot = note }, Cmd.none )
+            ( updateNoteAndScaleInfo model note, Cmd.none )
 
         UpdateScale scale_ ->
             ( { model | currentScale = scale_ }, Cmd.none )
+
+
+updateNoteAndScaleInfo : Model -> UserNote -> Model
+updateNoteAndScaleInfo model userNote =
+    let
+        newComputerNote =
+            userNoteToComputerNote userNote
+
+        newCurrentRoot =
+            userNote
+
+        newAccidentalBehavior =
+            accidentalFromUserNote userNote
+    in
+        model
+            |> updateComputerNote newComputerNote
+            |> updateCurrentRoot newCurrentRoot
+            |> updateAccidentalBehavior newAccidentalBehavior
+
+
+updateComputerNote : Note -> Model -> Model
+updateComputerNote newComputerNote model =
+    { model | computerNote = newComputerNote }
+
+
+updateCurrentRoot : UserNote -> Model -> Model
+updateCurrentRoot userNote model =
+    { model | currentRoot = userNote }
+
+
+updateAccidentalBehavior : AccidentalClass -> Model -> Model
+updateAccidentalBehavior accidentalClass model =
+    { model | accidentalBehavior = accidentalClass }
 
 
 
@@ -143,7 +311,7 @@ view model =
 
 rootNoteDropdown : Model -> Html Msg
 rootNoteDropdown model =
-    dropDownMaker "Please select a root note" chromaticScale UpdateRoot
+    dropDownMaker "Please select a root note" listOfUserNotes UpdateRoot
 
 
 scaleDropdown : Model -> Html Msg
@@ -180,7 +348,7 @@ makeScale model =
 
 getRootAndScale : Model -> ( Note, Scale )
 getRootAndScale model =
-    ( model.currentRoot, model.currentScale )
+    ( userNoteToComputerNote model.currentRoot, model.currentScale )
 
 
 reindexChromaticScale : ( Note, Scale ) -> ( List Note, Scale )
