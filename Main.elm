@@ -10,7 +10,7 @@ import Src.Types exposing (..)
 
 
 --------------------------------------------------------------------
---                      MAIN
+--                         MAIN
 --------------------------------------------------------------------
 
 
@@ -77,12 +77,10 @@ updateNoteAndScaleInfo model userNote =
         newAccidentalBehavior =
             accidentalFromUserNote userNote
     in
-        Debug.log "This is update Note and scale info" ( model, userNote, newComputerNote, newCurrentRoot, newAccidentalBehavior )
-            |> \_ ->
-                model
-                    |> updateComputerNote newComputerNote
-                    |> updateCurrentRoot newCurrentRoot
-                    |> updateAccidentalBehavior newAccidentalBehavior
+        model
+            |> updateComputerNote newComputerNote
+            |> updateCurrentRoot newCurrentRoot
+            |> updateAccidentalBehavior newAccidentalBehavior
 
 
 updateComputerNote : Note -> Model -> Model

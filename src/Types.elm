@@ -214,17 +214,15 @@ accidentalFromUserNote userNote =
         isFlat =
             List.member userNote listOfFlatAccidentals
     in
-        Debug.log "THis is the accidentalFromUserNote" ( userNote, isSharp, isFlat )
-            |> \_ ->
-                case ( isSharp, isFlat ) of
-                    ( True, _ ) ->
-                        Sharp_
+        case ( isSharp, isFlat ) of
+            ( True, _ ) ->
+                Sharp_
 
-                    ( _, True ) ->
-                        Flat_
+            ( _, True ) ->
+                Flat_
 
-                    ( False, False ) ->
-                        Natural_
+            ( False, False ) ->
+                Natural_
 
 
 userNoteToComputerNote : UserNote -> Note
@@ -284,21 +282,19 @@ userNoteToComputerNote userNote =
 
 computerNoteToUserNote : AccidentalClass -> Note -> UserNote
 computerNoteToUserNote accidentalBehavior note =
-    Debug.log "computerNoteToUserNote" ( accidentalBehavior, note )
-        |> \_ ->
-            case ( note, accidentalBehavior ) of
-                ( Note a, _ ) ->
-                    convertNaturalPitchToUserNote a
+    case ( note, accidentalBehavior ) of
+        ( Note a, _ ) ->
+            convertNaturalPitchToUserNote a
 
-                ( Accidental a b, Sharp_ ) ->
-                    convertSharpPitchToUserNote a
+        ( Accidental a b, Sharp_ ) ->
+            convertSharpPitchToUserNote a
 
-                ( Accidental a b, Flat_ ) ->
-                    convertFlatPitchToUserNote b
+        ( Accidental a b, Flat_ ) ->
+            convertFlatPitchToUserNote b
 
-                _ ->
-                    -- This can't happen. Dependent types would be nice for this sort of thing.
-                    CNatural
+        _ ->
+            -- This can't happen. Dependent types would be nice for this sort of thing.
+            CNatural
 
 
 convertNaturalPitchToUserNote : Pitch -> UserNote
