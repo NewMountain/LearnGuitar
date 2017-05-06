@@ -6,7 +6,7 @@ import Svg exposing (circle, svg, line)
 import Svg.Attributes exposing (..)
 import Select
 import List.Extra as LE
-import Types exposing (..)
+import Src.Types exposing (..)
 
 
 --------------------------------------------------------------------
