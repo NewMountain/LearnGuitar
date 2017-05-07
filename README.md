@@ -1,4 +1,4 @@
-# LearnGuitar.elm
+# LearnGuitar
 
 This project comes from a person who loves programming as much as playing guitar. The inspiration
 of the project is a tool to:
