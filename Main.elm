@@ -151,26 +151,128 @@ displayArpeggio : Model -> Html Msg
 displayArpeggio model =
     div
         []
-        [ text "The arpeggio is a: "
+        [ text <| "The arpeggio is a: " ++ calculateChord model
         , br [] []
         , text "The notes are: "
         , div [] (makeArpeggioNotes model.humanScale)
         ]
 
 
+calculateChord : Model -> String
+calculateChord model =
+    model
+        |> makeScale
+        |> flip takeChordTones (Note C)
+        |> calculateChordDistance
+        |> distancesToChordDescription
+
+
+distancesToChordDescription : ( Int, Int, Int ) -> String
+distancesToChordDescription ( third, fifth, seventh ) =
+    classifyThird third ++ classifyFifth fifth ++ classifySeventh seventh
+
+
+classifyThird : Int -> String
+classifyThird int =
+    case int of
+        2 ->
+            "Diminished Third "
+
+        3 ->
+            "Minor Third "
+
+        4 ->
+            "Major Third "
+
+        5 ->
+            "Augmented Third "
+
+        _ ->
+            "Never seen a third with interval " ++ toString int ++ "before "
+
+
+classifyFifth : Int -> String
+classifyFifth int =
+    case int of
+        6 ->
+            "Flat 5 "
+
+        7 ->
+            ""
+
+        8 ->
+            "Augmted Fifth "
+
+        _ ->
+            "Never seen a fifth with interval " ++ toString int ++ "before "
+
+
+classifySeventh : Int -> String
+classifySeventh int =
+    case int of
+        11 ->
+            "Major Seventh"
+
+        10 ->
+            "Minor Seventh"
+
+        9 ->
+            "Diminished Seventh"
+
+        _ ->
+            "Never seen a seventh with interval " ++ toString int ++ "before "
+
+
+calculateChordDistance : List Note -> ( Int, Int, Int )
+calculateChordDistance notes =
+    case notes of
+        root :: third :: fifth :: seventh :: [] ->
+            chordDistances ( root, third, fifth, seventh )
+
+        _ ->
+            ( 4, 7, 11 )
+
+
+chordDistances : ( Note, Note, Note, Note ) -> ( Int, Int, Int )
+chordDistances ( root, third, fifth, seventh ) =
+    List.map (calculateInterval root) [ third, fifth, seventh ]
+        |> pluckResults
+
+
+pluckResults : List Int -> ( Int, Int, Int )
+pluckResults lsInts =
+    case lsInts of
+        thirdInterval :: fifthInterval :: seventhInternal :: [] ->
+            ( thirdInterval, fifthInterval, seventhInternal )
+
+        _ ->
+            ( 4, 7, 11 )
+
+
+calculateInterval : Note -> Note -> Int
+calculateInterval root note =
+    chromaticScale
+        |> List.repeat 2
+        |> List.concat
+        |> LE.dropWhile ((/=) root)
+        |> LE.takeWhile ((/=) note)
+        |> Debug.log "See the interval scale"
+        |> List.length
+
+
 makeArpeggioNotes : List String -> List (Html Msg)
 makeArpeggioNotes humanNotes =
     humanNotes
-        |> takeChordTones
+        |> flip takeChordTones "C"
         |> List.map (\s -> div [] [ text s ])
 
 
-takeChordTones : List String -> List String
-takeChordTones allScalarNotes =
+takeChordTones : List a -> a -> List a
+takeChordTones allScalarNotes default =
     let
         giveMeTheNote i =
             LE.getAt i allScalarNotes
-                |> Maybe.withDefault "C"
+                |> Maybe.withDefault default
     in
         [ 0, 2, 4, 6 ]
             |> List.map giveMeTheNote

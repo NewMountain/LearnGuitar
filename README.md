@@ -21,7 +21,7 @@ This project is a creative outlet and is purpose built for me. I would love to h
 
 ### TODOs
 -  [x] Create scales on demand
--  [ ] Create arpeggios on demand
+-  [x] Create arpeggios on demand
 -  [ ] Add notion of fretboard
 -  [ ] Allow 6 and 7 string guitars
 -  [ ] Given a fretboard location, recomend chords and scales
