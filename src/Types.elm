@@ -10,6 +10,7 @@ type alias Model =
     , computerNote : Note
     , currentScale : Scale
     , accidentalBehavior : AccidentalClass
+    , humanScale : List String
     }
 
 

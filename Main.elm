@@ -41,6 +41,7 @@ initModel =
     , computerNote = Note C
     , currentScale = Major
     , accidentalBehavior = Natural_
+    , humanScale = [ "C", "D", "E", "F", "G", "A", "B", "C" ]
     }
 
 
@@ -62,7 +63,7 @@ update msg model =
             ( updateNoteAndScaleInfo model note, Cmd.none )
 
         UpdateScale scale_ ->
-            ( { model | currentScale = scale_ }, Cmd.none )
+            ( updateScaleAndRecalculate scale_ model, Cmd.none )
 
 
 updateNoteAndScaleInfo : Model -> UserNote -> Model
@@ -81,6 +82,7 @@ updateNoteAndScaleInfo model userNote =
             |> updateComputerNote newComputerNote
             |> updateCurrentRoot newCurrentRoot
             |> updateAccidentalBehavior newAccidentalBehavior
+            |> (\mdl -> updateHumanScale (makeScaleElements mdl) mdl)
 
 
 updateComputerNote : Note -> Model -> Model
@@ -96,6 +98,22 @@ updateCurrentRoot userNote model =
 updateAccidentalBehavior : AccidentalClass -> Model -> Model
 updateAccidentalBehavior accidentalClass model =
     { model | accidentalBehavior = accidentalClass }
+
+
+updateHumanScale : List String -> Model -> Model
+updateHumanScale newHumanScale model =
+    { model | humanScale = newHumanScale }
+
+
+updateScale : Scale -> Model -> Model
+updateScale newScale model =
+    { model | currentScale = newScale }
+
+
+updateScaleAndRecalculate : Scale -> Model -> Model
+updateScaleAndRecalculate newScale model =
+    updateScale newScale model
+        |> (\mdl -> updateNoteAndScaleInfo mdl model.currentRoot)
 
 
 
@@ -124,7 +142,38 @@ view model =
         , br [] []
         , div [] [ text "The scale is: " ]
         , displayScale model
+        , displayArpeggio model
+        , text <| toString model
         ]
+
+
+displayArpeggio : Model -> Html Msg
+displayArpeggio model =
+    div
+        []
+        [ text "The arpeggio is a: "
+        , br [] []
+        , text "The notes are: "
+        , div [] (makeArpeggioNotes model.humanScale)
+        ]
+
+
+makeArpeggioNotes : List String -> List (Html Msg)
+makeArpeggioNotes humanNotes =
+    humanNotes
+        |> takeChordTones
+        |> List.map (\s -> div [] [ text s ])
+
+
+takeChordTones : List String -> List String
+takeChordTones allScalarNotes =
+    let
+        giveMeTheNote i =
+            LE.getAt i allScalarNotes
+                |> Maybe.withDefault "C"
+    in
+        [ 0, 2, 4, 6 ]
+            |> List.map giveMeTheNote
 
 
 rootNoteDropdown : Model -> Html Msg
@@ -169,11 +218,17 @@ displayScale model =
 displayScaleElements : Model -> List (Html Msg)
 displayScaleElements model =
     model
+        |> .humanScale
+        |> List.map (\s -> div [] [ text s ])
+
+
+makeScaleElements : Model -> List String
+makeScaleElements model =
+    model
         |> makeScale
         |> List.map (computerNoteToUserNote model.accidentalBehavior)
         |> List.map showUserNote
         |> enharmonicsSuck
-        |> List.map (\s -> div [] [ text s ])
 
 
 enharmonicsSuck : List String -> List String
